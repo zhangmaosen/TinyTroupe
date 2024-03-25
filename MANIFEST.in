@@ -1,0 +1,3 @@
+include tinytroupe\config.ini
+recursive-include tinytroupe *.py
+recursive-include tinytroupe *.md *.mustache
