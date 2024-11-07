@@ -14,7 +14,17 @@
   - **Product and project management:** TinyTroupe can **read project or product proposals** and **give feedback** from the perspective of **specific personas** (e.g., physicians, lawyers, and knowledge workers in general).
   - **Brainstorming:** TinyTroupe can simulate **focus groups** and deliver great product feedback at a fraction of the cost!
 
-In all of the above, and many others, we hope users () can **gain insights** about their domain of interest, and thus make better decisions.
+In all of the above, and many others, we hope users can **gain insights** about their domain of interest, and thus make better decisions. Here's one example output for TV ad evaluation:
+
+<p align="center">
+  <img src="./docs/example_screenshot_tv-ad-1.png" alt="An example.">
+</p>
+
+And here's a focus group starting to brainstorm about new AI features for Microsoft Word:
+
+<p align="center">
+  <img src="./docs/example_screenshot_brainstorming-1.png" alt="An example.">
+</p>
 
 We are releasing *TinyTroupe* at a relativelly early stage, with considerable work still to be done, because we are looking for feedback and contributions to steer development in productive directions. We are particularly interested in finding new potential use cases, for instance in specific industries. 
 
