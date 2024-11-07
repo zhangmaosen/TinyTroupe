@@ -1,10 +1,9 @@
-# TinyTroupe
-*LLM-powered multiagent persona simulation for imagination enhancement and insight generation.*
+# TinyTroupe 🧑‍⚕️🧑‍💼🧑‍💻🧑‍🔧
+*LLM-powered multiagent persona simulation for imagination enhancement and business insights.*
 
 <p align="center">
   <img src="./docs/tinytroupe_stage.png" alt="A tiny office with tiny people doing some tiny jobs.">
 </p>
-
 
 *TinyTroupe* is an experimental Python library that allows the **simulation** of people with specific personalities, interests, and goals. These artificial agents - `TinyPerson`s - can listen to us and one another, reply back, and go about their lives in simulated `TinyWorld` environments. This is achieved by leveraging the power of Large Language Models (LLMs), notably GPT-4, to generate realistic simulated behavior. This allow us to investigate a wide range of **convincing interactions** and **consumer types**, with **highly customizable personas**, under **conditions of our choosing**. The focus is thus on *understanding* human behavior and not on directly *supporting it* (like, say, AI assistants do) -- this results in, among other things, specialized mechanisms that make sense only in a simulation setting. Further, unlike other *game-like* LLM-based simulation approaches, TinyTroupe aims at enlightening productivity and business scenarios, thereby contributing to more successful projects and products. Here are some application ideas to **enhance human imagination**:
 
@@ -14,28 +13,108 @@
   - **Product and project management:** TinyTroupe can **read project or product proposals** and **give feedback** from the perspective of **specific personas** (e.g., physicians, lawyers, and knowledge workers in general).
   - **Brainstorming:** TinyTroupe can simulate **focus groups** and deliver great product feedback at a fraction of the cost!
 
-In all of the above, and many others, we hope users can **gain insights** about their domain of interest, and thus make better decisions. Here's one example output for TV ad evaluation:
+In all of the above, and many others, we hope users can **gain insights** about their domain of interest, and thus make better decisions. 
+
+We are releasing *TinyTroupe* at a relativelly early stage, with considerable work still to be done, because we are looking for feedback and contributions to steer development in productive directions. We are particularly interested in finding new potential use cases, for instance in specific industries. 
+
+
+
+
+>[!WARNING] 
+>⚖️ **Read the legal disclaimer:**
+>TinyTroupe is for research and simulation only. You are fully responsible for any use you make of the generated outputs. Various important additional legal considerations apply and constrain its use, please read the full [Legal Disclaimer](#legal-disclaimer) section below before using TinyTroupe.
+
+
+>[!NOTE] 
+>🚧 **API stability**:
+>TinyTroupe is an ongoing research project, still under very significant development, and the API is still subject to frequent changes. We are working to stabilize the API and provide a more consistent and user-friendly experience. We appreciate your patience and feedback as we continue to improve the library.
+
+<div style="padding: 10px; border-radius: 5px; text-align: center; margin-bottom: 20px; font-size: 2em;">
+  🗺️
+</div>
+
+
+<div style="display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 20px;">
+  <div style="width: 150px; margin: 10px;">
+    <strong>📚 <a href="#examples">Examples</a></strong>
+  </div>
+  <div style="width: 150px; margin: 10px;">
+    <strong>🛠️ <a href="#pre-requisites">Pre-requisites</a></strong>
+  </div>
+  <div style="width: 150px; margin: 10px;">
+    <strong>📥 <a href="#installation">Installation</a></strong>
+  </div>
+  <div style="width: 150px; margin: 10px;">
+    🌟 <a href="#principles">Principles</a>
+  </div>
+  <div style="width: 150px; margin: 10px;">
+    🏗️ <a href="#project-structure">Project Structure</a>
+  </div>
+  <div style="width: 150px; margin: 10px;">
+    📖 <a href="#using-the-library">Using the Library</a>
+  </div>
+  <div style="width: 150px; margin: 10px;">
+    🤝 <a href="#contributing">Contributing</a>
+  </div>
+  <div style="width: 150px; margin: 10px;">
+    🙏 <a href="#acknowledgements">Acknowledgements</a>
+  </div>
+  <div style="width: 150px; margin: 10px;">
+    📜 <a href="#how-to-cite-tinytroupe">Citing TinyTroupe</a>
+  </div>
+  <div style="width: 150px; margin: 10px;">
+    ⚖️ <a href="#legal-disclaimer">Legal Disclaimer</a>
+  </div>
+  <div style="width: 150px; margin: 10px;">
+    ™️ <a href="#trademarks">Trademarks</a>
+  </div>
+</div>
+
+
+## Examples
+
+To get a sense of what TinyTroupe can do, here are some examples of its use. These examples are available in the `examples/` folder, and you can eihte inspect the pre-compiled Jupyter notebooks or run them yourself locally.
+
+### 🧪**Example 1** *(from [interview_with_customer.ipynb](./examples/interview_with_customer.ipynb))*
+Let's begin with a simple customer interview scenario, where a business consultant approaches a banker:
+<p align="center">
+  <img src="./docs/example_screenshot_customer-interview-1.png" alt="An example.">
+</p>
+
+The conversation can go on for a few steps to dig deeper and deeper until the consultant is satisfied with the information gathered, for instance a concrete project idea:
+<p align="center">
+  <img src="./docs/example_screenshot_customer-interview-2.png" alt="An example.">
+</p>
+
+
+
+### 🧪**EXAMPLE 2** *(from [advertisement_for_tv.ipynb](./examples/advertisement_for_tv.ipynb))*
+Let's evaluate some online ads options to pick the best one. Here's one example output for TV ad evaluation:
 
 <p align="center">
   <img src="./docs/example_screenshot_tv-ad-1.png" alt="An example.">
 </p>
 
-And here's a focus group starting to brainstorm about new AI features for Microsoft Word:
+Now, instead of having to carefully read what the agents said, we can extract the choice of each agent and compute the overall preference in an automated manner:
+
+<p align="center">
+  <img src="./docs/example_screenshot_tv-ad-2.png" alt="An example.">
+</p>
+
+### 🧪 **EXAMPLES 3** *(from [product_brainstorming.ipynb](./examples/product_brainstorming.ipynb))*
+And here's a focus group starting to brainstorm about new AI features for Microsoft Word. Instead of interacting with each agent individually, we manipulate the environment to make them interact with each other:
 
 <p align="center">
   <img src="./docs/example_screenshot_brainstorming-1.png" alt="An example.">
 </p>
 
-We are releasing *TinyTroupe* at a relativelly early stage, with considerable work still to be done, because we are looking for feedback and contributions to steer development in productive directions. We are particularly interested in finding new potential use cases, for instance in specific industries. 
+After running a simulation, we can extract the results in a machine-readable manner, to reuse elsewhere (e.g., a report generator); here's what we get for the above brainstorming session:
 
->[!WARNING] 
->**Read the legal disclaimer:**
->TinyTroupe is for research and simulation only. You are fully responsible for any use you make of the generated outputs. Various important additional legal considerations apply and constrain its use, please read the full [Legal Disclaimer](#legal-disclaimer) section below before using TinyTroupe.
+<p align="center">
+  <img src="./docs/example_screenshot_brainstorming-2.png" alt="An example.">
+</p>
 
-
->[!NOTE] 
->**API stability**:
->TinyTroupe is an ongoing research project, and the API is still subject to frequent changes. We are working to stabilize the API and provide a more consistent and user-friendly experience. We appreciate your patience and feedback as we continue to improve the library.
+You can find other examples in the `examples/` folder.
 
 
 ## Pre-requisites
@@ -318,13 +397,12 @@ Other special contributions were made by:
   
  ... are you missing here? Please remind us!
 
-## How to Cite TinyTroupe
+## Citing TinyTroupe
 
 We are working in an introductory paper that will be the official academic citation for TinyTroupe. In the meantime, please just cite this repository including the core team members as authors. For instance:
 
 
-
->Paulo Salem, Christopher Olsen, Paulo Freire, Yi Ding, Prerit Saxena (2024). **TinyTroupe: LLM-powered multiagent persona simulation for imagination enhancement and insight generation.** [Computer software]. GitHub repository. https://github.com/microsoft/tinytroupe
+>Paulo Salem, Christopher Olsen, Paulo Freire, Yi Ding, Prerit Saxena (2024). **TinyTroupe: LLM-powered multiagent persona simulation for imagination enhancement and business insights.** [Computer software]. GitHub repository. https://github.com/microsoft/tinytroupe
 
 
 Or as bibtex:
@@ -332,7 +410,7 @@ Or as bibtex:
   ```bibtex
   @misc{tinytroupe,
     author = {Paulo Salem and Christopher Olsen and Paulo Freire and Yi Ding and Prerit Saxena},
-    title = {TinyTroupe: LLM-powered multiagent persona simulation for imagination enhancement and insight generation},
+    title = {TinyTroupe: LLM-powered multiagent persona simulation for imagination enhancement and business insights},
     year = {2024},
     howpublished = {\url{https://github.com/microsoft/tinytroupe}},
     note = {GitHub repository}

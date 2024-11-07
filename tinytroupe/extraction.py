@@ -44,6 +44,7 @@ class InteractionResultsExtractor:
                         extraction_objective:str="The main points present in the agent's interactions history.", 
                         situation:str = "", 
                         fields:list=None,
+                        fields_hints:dict=None,
                         verbose:bool=False):
         """
         Extracts results from a TinyPerson instance.
@@ -62,6 +63,9 @@ class InteractionResultsExtractor:
         rendering_configs = {}
         if fields is not None:
             rendering_configs["fields"] = ", ".join(fields)
+        
+        if fields_hints is not None:
+            rendering_configs["fields_hints"] = list(fields_hints.items())
         
         messages.append({"role": "system", 
                          "content": chevron.render(
@@ -113,6 +117,7 @@ performed.
                                    extraction_objective:str="The main points that can be derived from the agents conversations and actions.", 
                                    situation:str="", 
                                    fields:list=None,
+                                   fields_hints:dict=None,
                                    verbose:bool=False):
         """
         Extracts results from a TinyWorld instance.
@@ -131,6 +136,9 @@ performed.
         rendering_configs = {}
         if fields is not None:
             rendering_configs["fields"] = ", ".join(fields)
+        
+        if fields_hints is not None:
+            rendering_configs["fields_hints"] = list(fields_hints.items())
         
         messages.append({"role": "system", 
                          "content": chevron.render(
