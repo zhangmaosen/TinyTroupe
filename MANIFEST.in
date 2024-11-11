@@ -1,5 +1,4 @@
-# Include all .json, .ini, .mustache, and .md files in the base package folder
-recursive-include tinytroupe *.json *.ini *.mustache *.md
-
-# Include everything under the prompts folder
-recursive-include tinytroupe/prompts *
+recursive-include tinytroupe *.ini
+recursive-include tinytroupe *.py
+recursive-include tinytroupe *.md *.mustache
+recursive-include tinytroupe *.json
