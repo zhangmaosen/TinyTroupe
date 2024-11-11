@@ -119,17 +119,17 @@ class TinyPersonFactory(TinyFactory):
         
         logger.info(f"Starting the generation of the {number_of_factories} person factories based on that context: {generic_context_text}")
         
-        person_factories_prompt = open(os.path.join(os.path.dirname(__file__), 'prompts/generate_person_factory.md')).read()
+        system_prompt = open(os.path.join(os.path.dirname(__file__), 'prompts/generate_person_factory.md')).read()
 
         messages = []
-        messages.append({"role": "system", "content": person_factories_prompt})
+        messages.append({"role": "system", "content": system_prompt})
 
-        prompt = chevron.render("Please, create {{number_of_factories}} person descriptions based on the following broad context: {{context}}", {
+        user_prompt = chevron.render("Please, create {{number_of_factories}} person descriptions based on the following broad context: {{context}}", {
             "number_of_factories": number_of_factories,
             "context": generic_context_text
         })
 
-        messages.append({"role": "user", "content": prompt})
+        messages.append({"role": "user", "content": user_prompt})
 
         response = openai_utils.client().send_message(messages)
 

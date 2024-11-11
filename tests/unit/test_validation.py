@@ -10,8 +10,8 @@ sys.path.append('..')
 from tinytroupe.examples import create_oscar_the_architect
 from tinytroupe.control import Simulation
 import tinytroupe.control as control
-from tinytroupe.personfactory import TinyPersonFactory
-from tinytroupe.personchecker import TinyPersonChecker
+from tinytroupe.factory import TinyPersonFactory
+from tinytroupe.validation import TinyPersonValidator
 
 from testing_utils import *
 
@@ -47,7 +47,9 @@ def test_validate_person(setup):
     - Is a bit of a snob
     - Might pretend to be a hard-core woke, but in reality that's just a facade to climb the corporate ladder  
     """
-    banker_score, banker_justification = TinyPersonChecker.validate_person(banker, expectations=banker_expectations, include_agent_spec=False, max_content_length=None)
+    banker_score, banker_justification = TinyPersonValidator.validate_person(banker, expectations=banker_expectations, include_agent_spec=False, max_content_length=None)
+    print("Banker score: ", banker_score)
+    print("Banker justification: ", banker_justification)
 
     assert banker_score > 0.5, f"Validation score is too low: {banker_score:.2f}"
 
@@ -55,30 +57,32 @@ def test_validate_person(setup):
     ##########################
     # Busy Knowledge Worker   
     ########################## 
-    bkw_spec =\
+    monk_spec =\
     """
-    A typical knowledge worker in a large corporation grinding his way into upper middle class.
+    A poor buddhist monk living alone and isolated in a remote montain.
     """
-    bkw_factory = TinyPersonFactory(bkw_spec)
-    busy_knowledge_worker = bkw_factory.generate_person()
-    bkw_expectations =\
+    monk_spec_factory = TinyPersonFactory(monk_spec)
+    monk = monk_spec_factory.generate_person()
+    monk_expectations =\
     """
     Some characteristics of this person:
-    - Very busy
-    - Likes to have lunch with colleagues
-    - To travel during vacations
-    - Is married and worrying about the cost of living, particularly regarding his/her children
-    - Has some stress issues, and potentially some psychiatric problems
-    - Went to college and has a degree in some technical field
-    - Has some very specific skills
-    - Does not have a wide range of interests, being more focused on his/her career, family and very few hobbies if any
+    - Is very poor, and in fact do not seek money
+    - Has no formal education, but is very wise
+    - Is very calm and patient
+    - Is very humble and does not seek attention
+    - Honesty is a core value    
     """
 
-    bkw_score, bkw_justification = TinyPersonChecker.validate_person(busy_knowledge_worker, expectations=bkw_expectations, include_agent_spec=False, max_content_length=None)
+    monk_score, monk_justification = TinyPersonValidator.validate_person(monk, expectations=monk_expectations, include_agent_spec=False, max_content_length=None)
+    print("Monk score: ", monk_score)
+    print("Monk justification: ", monk_justification)
+          
 
-    assert bkw_score > 0.5, f"Validation score is too low: {bkw_score:.2f}"
+    assert monk_score > 0.5, f"Validation score is too low: {monk_score:.2f}"
 
     # Now, let's check the score for the busy knowledge worker with the wrong expectations! It has to be low!
-    wrong_expectations_score, wrong_expectations_justification = TinyPersonChecker.validate_person(busy_knowledge_worker, expectations=banker_expectations, include_agent_spec=False, max_content_length=None)
+    wrong_expectations_score, wrong_expectations_justification = TinyPersonValidator.validate_person(monk, expectations=banker_expectations, include_agent_spec=False, max_content_length=None)
 
     assert wrong_expectations_score < 0.5, f"Validation score is too high: {wrong_expectations_score:.2f}"
+    print("Wrong expectations score: ", wrong_expectations_score)
+    print("Wrong expectations justification: ", wrong_expectations_justification)

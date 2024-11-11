@@ -22,14 +22,14 @@ logger = logging.getLogger("tinytroupe")
 
 from tinytroupe.agent import TinyPerson
 from tinytroupe.environment import TinyWorld
-from tinytroupe.personfactory import TinyPersonFactory
+from tinytroupe.factory import TinyPersonFactory
 from tinytroupe.utils import JsonSerializableRegistry
 
 
 from tinytroupe import openai_utils
 import tinytroupe.utils as utils
 
-class InteractionResultsExtractor:
+class ResultsExtractor:
 
     def __init__(self):
         self._extraction_prompt_template_path = os.path.join(os.path.dirname(__file__), 'prompts/interaction_results_extractor.mustache')
@@ -201,7 +201,7 @@ Each interaction history includes stimuli the corresponding agent received as we
 
 
 
-class InteractionResultsReducer:
+class ResultsReducer:
 
     def __init__(self):
         self.results = {}
@@ -510,4 +510,4 @@ class Normalizer:
 ################################################################################
 
 # default extractor
-default_extractor = InteractionResultsExtractor()
+default_extractor = ResultsExtractor()

@@ -10,7 +10,7 @@ sys.path.append('..')
 from tinytroupe.examples import create_oscar_the_architect
 from tinytroupe.control import Simulation
 import tinytroupe.control as control
-from tinytroupe.personfactory import TinyPersonFactory
+from tinytroupe.factory import TinyPersonFactory
 
 from testing_utils import *
 

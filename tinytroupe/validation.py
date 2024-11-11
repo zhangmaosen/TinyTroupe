@@ -12,7 +12,7 @@ import tinytroupe.utils as utils
 default_max_content_display_length = config["OpenAI"].getint("MAX_CONTENT_DISPLAY_LENGTH", 1024)
 
 
-class TinyPersonChecker:
+class TinyPersonValidator:
 
     @staticmethod
     def validate_person(person, expectations=None, include_agent_spec=True, max_content_length=default_max_content_display_length):
