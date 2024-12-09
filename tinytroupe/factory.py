@@ -184,7 +184,8 @@ class TinyPersonFactory(TinyFactory):
 
             # due to a technicality, we need to call an auxiliary method to be able to use the transactional decorator.
             message = self._aux_model_call(messages=messages, temperature=temperature)
-
+            # for ollama client
+            #message = message['message']
             if message is not None:
                 result = utils.extract_json(message["content"])
 

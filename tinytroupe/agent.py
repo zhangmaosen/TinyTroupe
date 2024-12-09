@@ -791,7 +791,7 @@ class TinyPerson(JsonSerializableRegistry):
 
         logger.debug(f"[{self.name}] Received message: {next_message}")
 
-        return next_message["message"]["role"], utils.extract_json(next_message["message"]["content"])
+        return next_message["role"], utils.extract_json(next_message["content"])
 
     ###########################################################
     # Internal cognitive state changes

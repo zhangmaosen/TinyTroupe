@@ -427,17 +427,29 @@ class OllamaClient:
         """
         Sends a message to the Ollama API and returns the full JSON response.
         """
-        payload = {
-            "model": self.model,
-            "messages": messages,
-            "stream": False,
-            "options": {
-                "temperature": self.temperature,
-                "top_p": self.top_p,
-                "num_ctx": 25000,
-            },
-            "format":response_format.model_json_schema(),
-        }
+        if response_format is not None:
+            payload = {
+                "model": self.model,
+                "messages": messages,
+                "stream": False,
+                "options": {
+                    "temperature": self.temperature,
+                    "top_p": self.top_p,
+                    "num_ctx": 25000,
+                },
+                "format":response_format.model_json_schema(),
+            }
+        else:
+            payload = {
+                "model": self.model,
+                "messages": messages,
+                "stream": False,
+                "options": {
+                    "temperature": self.temperature,
+                    "top_p": self.top_p,
+                    "num_ctx": 25000,
+                },
+            }
         
         
         try:
@@ -472,10 +484,10 @@ class OllamaClient:
                     pass  # If parsing fails, return original response
                 
                 # Return the raw response
-                return response_json
+                return response_json['message']
 
             logger.error(f"Unexpected response format: {response_json}")
-            return response_json
+            return response_json['message']
 
         except requests.exceptions.RequestException as e:
             logger.error(f"Error communicating with Ollama API: {e}")
