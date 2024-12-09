@@ -9,6 +9,7 @@ import configparser
 import tiktoken
 from tinytroupe import utils
 from tinytroupe.control import transactional
+import requests
 
 logger = logging.getLogger("tinytroupe")
 
@@ -414,7 +415,75 @@ class AzureClient(OpenAIClient):
                                   api_version = config["OpenAI"]["AZURE_API_VERSION"],
                                   api_key = os.getenv("AZURE_OPENAI_KEY"))
     
+class OllamaClient:
+    def __init__(self, base_url, model, temperature=0.3, top_p=0.95, timeout=60):
+        self.base_url = base_url
+        self.model = model
+        self.temperature = temperature
+        self.top_p = top_p
+        self.timeout = timeout
 
+    def send_message(self, messages, temperature=0.1, response_format=None):
+        """
+        Sends a message to the Ollama API and returns the full JSON response.
+        """
+        payload = {
+            "model": self.model,
+            "messages": messages,
+            "stream": False,
+            "options": {
+                "temperature": self.temperature,
+                "top_p": self.top_p,
+                "num_ctx": 25000,
+            },
+            "format":response_format.model_json_schema(),
+        }
+        
+        
+        try:
+            response = requests.post(
+                self.base_url,
+                json=payload,
+                timeout=self.timeout,
+                proxies={}
+            )
+            response.raise_for_status()
+            
+            # Get the raw response
+            response_json = response.json()
+            logger.debug(f"Ollama API Response: {response_json}")
+
+            # If we have a message with content
+            if 'message' in response_json and 'content' in response_json['message']:
+                content = response_json['message']['content']
+                
+                # Try to parse content as JSON
+                try:
+                    parsed_content = json.loads(content)
+                    if 'action' in parsed_content and 'cognitive_state' not in parsed_content:
+                        # Add cognitive_state if missing but action exists
+                        parsed_content['cognitive_state'] = {
+                            'goals': 'Continue current interaction',
+                            'attention': 'Current conversation',
+                            'emotions': 'Engaged'
+                        }
+                        return {'message': {'content': json.dumps(parsed_content)}}
+                except:
+                    pass  # If parsing fails, return original response
+                
+                # Return the raw response
+                return response_json
+
+            logger.error(f"Unexpected response format: {response_json}")
+            return response_json
+
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error communicating with Ollama API: {e}")
+            return {"error": str(e)}
+            
+        except ValueError as e:
+            logger.error(f"Failed to parse API response: {e}")
+            return {"error": "Invalid JSON response"}
 ###########################################################################
 # Exceptions
 ###########################################################################
@@ -505,6 +574,12 @@ def force_api_cache(cache_api_calls, cache_file_name=default["cache_file_name"])
 # default client
 register_client("openai", OpenAIClient())
 register_client("azure", AzureClient())
-    
+register_client("ollama", OllamaClient(
+    base_url=config["Ollama"].get("BASE_URL"),
+    model=config["Ollama"].get("MODEL"),
+    temperature=float(config["Ollama"].get("TEMPERATURE", 0.7)),
+    top_p=float(config["Ollama"].get("TOP_P", 0.95)),
+    timeout=int(config["Ollama"].get("TIMEOUT", 60))
+))
 
 

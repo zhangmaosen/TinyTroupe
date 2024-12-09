@@ -62,6 +62,9 @@ def extract_json(text: str) -> dict:
     opening curly brace; and any Markdown opening (```json) or closing(```) tags.
     """
     try:
+        #split text with ```json into arrays
+        text_array = (text.split("```json"))
+        text = text_array[0]
         # remove any text before the first opening curly or square braces, using regex. Leave the braces.
         text = re.sub(r'^.*?({|\[)', r'\1', text, flags=re.DOTALL)
 
