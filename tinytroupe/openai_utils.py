@@ -417,11 +417,21 @@ class AzureClient(OpenAIClient):
     
 class OllamaClient:
     def __init__(self, base_url, model, temperature=0.3, top_p=0.95, timeout=60):
+        from urllib.parse import urlparse
+
+        parsed_url = urlparse(base_url)
+
+        # 提取基础URL
+        client_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
         self.base_url = base_url
         self.model = model
         self.temperature = temperature
         self.top_p = top_p
         self.timeout = timeout
+        from ollama import Client
+        self.client = Client(
+            host=client_url
+        )
 
     def send_message(self, messages, temperature=0.1, response_format=None):
         """
@@ -435,9 +445,9 @@ class OllamaClient:
                 "options": {
                     "temperature": self.temperature,
                     "top_p": self.top_p,
-                    "num_ctx": 25000,
+                    "num_ctx": 35000,
                 },
-                "format":response_format.model_json_schema(),
+                "format":response_format #.model_json_schema(),
             }
         else:
             payload = {
@@ -461,6 +471,8 @@ class OllamaClient:
             )
             response.raise_for_status()
             
+            # response_client = self.client.chat(model=self.model, messages=messages,
+            #                  options={'temperature':self.temperature, 'top_p':self.top_p, 'num_ctx':35000}, format=response_format)
             # Get the raw response
             response_json = response.json()
             logger.debug(f"Ollama API Response: {response_json}")

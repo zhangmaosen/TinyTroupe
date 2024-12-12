@@ -60,8 +60,18 @@ from llama_index.readers.web import SimpleWebPageReader
 ##    model_name="BAAI/bge-small-en-v1.5"
 ##)
 
+# for ollama embeddings
+from llama_index.embeddings.ollama import OllamaEmbedding
+
+ollama_embedding = OllamaEmbedding(
+    model_name=config["Ollama"].get("EMBEDDING_MODEL"), #"bge-m3:latest",
+    base_url=config["Ollama"].get("EMBEDDING_URL"),
+    ollama_additional_kwargs={"mirostat": 0},
+)
+
+
 llmaindex_openai_embed_model = OpenAIEmbedding(model=default["embedding_model"], embed_batch_size=10)
-Settings.embed_model = llmaindex_openai_embed_model
+Settings.embed_model = ollama_embedding
 ###############################################################################
 
 
@@ -476,7 +486,39 @@ class TinyPerson(JsonSerializableRegistry):
             #
             for faculty in self._mental_faculties:
                 faculty.process_action(self, action)             
-            
+
+        @repeat_on_error(retries=5, exceptions=[KeyError])
+        def aux_act_sequence():
+            for (role, content) in self._produce_messages():
+
+                cognitive_state = content["cognitive_state"]
+
+
+                action = content['action']
+                logger.debug(f"{self.name}'s action: {action}")
+
+                goals = cognitive_state['goals']
+                attention = cognitive_state['attention']
+                emotions = cognitive_state['emotions']
+
+                self.store_in_memory({'role': role, 'content': content, 
+                                    'type': 'action', 
+                                    'simulation_timestamp': self.iso_datetime()})
+
+                self._actions_buffer.append(action)
+                self._update_cognitive_state(goals=cognitive_state['goals'],
+                                            attention=cognitive_state['attention'],
+                                            emotions=cognitive_state['emotions'])
+                
+                contents.append(content)          
+                if TinyPerson.communication_display:
+                    self._display_communication(role=role, content=content, kind='action', simplified=True, max_content_length=max_content_length)
+                
+                #
+                # Some actions induce an immediate stimulus or other side-effects. We need to process them here, by means of the mental faculties.
+                #
+                for faculty in self._mental_faculties:
+                    faculty.process_action(self, action)       
 
         #
         # How to proceed with a sequence of actions.
@@ -506,7 +548,10 @@ class TinyPerson(JsonSerializableRegistry):
                         break
 
                 aux_pre_act()
-                aux_act_once()
+                if config["OpenAI"]["API_TYPE"] == 'ollama':
+                    aux_act_sequence()
+                else:
+                    aux_act_once()
 
         if return_actions:
             return contents
@@ -793,6 +838,32 @@ class TinyPerson(JsonSerializableRegistry):
 
         return next_message["role"], utils.extract_json(next_message["content"])
 
+    @transactional
+    def _produce_messages(self):
+        # logger.debug(f"Current messages: {self.current_messages}")
+
+        # ensure we have the latest prompt (initial system message + selected messages from memory)
+        self.reset_prompt()
+
+        messages = [
+            {"role": msg["role"], "content": json.dumps(msg["content"])}
+            for msg in self.current_messages
+        ]
+
+        logger.debug(f"[{self.name}] Sending messages to OpenAI API")
+        logger.debug(f"[{self.name}] Last interaction: {messages[-1]}")
+        schema = {
+            "type":"array",
+            "items":CognitiveActionModel.model_json_schema()
+        }
+        next_messages = openai_utils.client().send_message(messages, response_format=schema)
+
+        logger.debug(f"[{self.name}] Received message: {next_messages}")
+
+        next_msg_role = next_messages["role"]
+        all_msgs = json.loads(next_messages["content"])
+        for next_message in all_msgs:
+            yield next_msg_role, next_message #utils.extract_json(next_message)
     ###########################################################
     # Internal cognitive state changes
     ###########################################################
