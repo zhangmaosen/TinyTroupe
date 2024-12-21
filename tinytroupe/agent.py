@@ -425,6 +425,7 @@ class TinyPerson(JsonSerializableRegistry):
         n=None,
         return_actions=False,
         max_content_length=default["max_content_display_length"],
+        is_quick=False,
     ):
         """
         Acts in the environment and updates its internal cognitive state.
@@ -446,6 +447,7 @@ class TinyPerson(JsonSerializableRegistry):
 
         # A separate function to run before each action, which is not meant to be repeated in case of errors.
         def aux_pre_act():
+            self._update_cognitive_state()
             # TODO maybe we don't need this at all anymore?
             #
             # A quick thought before the action. This seems to help with better model responses, perhaps because
@@ -488,9 +490,18 @@ class TinyPerson(JsonSerializableRegistry):
                 faculty.process_action(self, action)             
 
         @repeat_on_error(retries=5, exceptions=[KeyError])
-        def aux_act_sequence():
-            for (role, content) in self._produce_messages():
-
+        def aux_act_sequence(is_quick=is_quick):
+            goals = ''
+            attention = ''
+            emotions = ''
+            first_msg = True
+            for (role, content) in self._produce_messages(is_quick=is_quick):
+                if not isinstance(content, dict):
+                    logger.error(f"Content is not a dictionary: {content}")
+                    continue
+                # if 'content' has key 'cognitive_state', then we have a full message, otherwise we have a partial message
+                if "cognitive_state" not in content:
+                    break
                 cognitive_state = content["cognitive_state"]
 
 
@@ -506,19 +517,29 @@ class TinyPerson(JsonSerializableRegistry):
                                     'simulation_timestamp': self.iso_datetime()})
 
                 self._actions_buffer.append(action)
-                self._update_cognitive_state(goals=cognitive_state['goals'],
-                                            attention=cognitive_state['attention'],
-                                            emotions=cognitive_state['emotions'])
+                self._update_cognitive_state(goals=goals,
+                                            attention=attention,
+                                            emotions=emotions)
                 
-                contents.append(content)          
                 if TinyPerson.communication_display:
-                    self._display_communication(role=role, content=content, kind='action', simplified=True, max_content_length=max_content_length)
-                
+                    pass
+                    #self._display_communication(role=role, content=content, kind='action', simplified=True, max_content_length=max_content_length)
+
+
+                if content["action"]["type"] != "DONE":
+                    contents.append(content)
+                    aux_act_once()
+                else:
+                    aux_act_once()
+                    contents.append(content)    
+
+                                
                 #
                 # Some actions induce an immediate stimulus or other side-effects. We need to process them here, by means of the mental faculties.
                 #
                 for faculty in self._mental_faculties:
                     faculty.process_action(self, action)       
+
 
         #
         # How to proceed with a sequence of actions.
@@ -549,7 +570,8 @@ class TinyPerson(JsonSerializableRegistry):
 
                 aux_pre_act()
                 if config["OpenAI"]["API_TYPE"] == 'ollama':
-                    aux_act_sequence()
+                    #aux_act_once()
+                    aux_act_sequence(is_quick=False)
                 else:
                     aux_act_once()
 
@@ -685,6 +707,7 @@ class TinyPerson(JsonSerializableRegistry):
         speech,
         return_actions=False,
         max_content_length=default["max_content_display_length"],
+        is_quick=False,
     ):
         """
         Convenience method that combines the `listen` and `act` methods.
@@ -692,7 +715,8 @@ class TinyPerson(JsonSerializableRegistry):
 
         self.listen(speech, max_content_length=max_content_length)
         return self.act(
-            return_actions=return_actions, max_content_length=max_content_length
+            return_actions=return_actions, max_content_length=max_content_length,
+            is_quick=is_quick
         )
 
     @transactional
@@ -717,13 +741,14 @@ class TinyPerson(JsonSerializableRegistry):
         thought,
         return_actions=False,
         max_content_length=default["max_content_display_length"],
+        is_quick=False,
     ):
         """
         Convenience method that combines the `think` and `act` methods.
         """
 
         self.think(thought, max_content_length=max_content_length)
-        return self.act(return_actions=return_actions, max_content_length=max_content_length)
+        return self.act(return_actions=return_actions, max_content_length=max_content_length, is_quick=is_quick)
 
     def read_documents_from_folder(self, documents_path:str):
         """
@@ -832,14 +857,14 @@ class TinyPerson(JsonSerializableRegistry):
         logger.debug(f"[{self.name}] Sending messages to OpenAI API")
         logger.debug(f"[{self.name}] Last interaction: {messages[-1]}")
 
-        next_message = openai_utils.client().send_message(messages, response_format=CognitiveActionModel)
+        next_message = openai_utils.client().send_message(messages, response_format=CognitiveActionModel.model_json_schema())
 
         logger.debug(f"[{self.name}] Received message: {next_message}")
 
         return next_message["role"], utils.extract_json(next_message["content"])
 
     @transactional
-    def _produce_messages(self):
+    def _produce_messages(self, is_quick=False):
         # logger.debug(f"Current messages: {self.current_messages}")
 
         # ensure we have the latest prompt (initial system message + selected messages from memory)
@@ -856,7 +881,7 @@ class TinyPerson(JsonSerializableRegistry):
             "type":"array",
             "items":CognitiveActionModel.model_json_schema()
         }
-        next_messages = openai_utils.client().send_message(messages, response_format=schema)
+        next_messages = openai_utils.client().send_message(messages, response_format=schema, is_quick=is_quick)
 
         logger.debug(f"[{self.name}] Received message: {next_messages}")
 
@@ -896,7 +921,8 @@ class TinyPerson(JsonSerializableRegistry):
             self._configuration["current_emotions"] = emotions
         
         # update relevant memories for the current situation
-        current_memory_context = self.retrieve_relevant_memories_for_current_context()
+        current_memory_context = self.retrieve_relevant_memories_for_current_context(top_k=14)
+        logger.info(f"current_memory_context are: {current_memory_context}")
         self._configuration["current_memory_context"] = current_memory_context
 
         self.reset_prompt()

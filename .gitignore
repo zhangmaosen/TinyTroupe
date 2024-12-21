@@ -173,3 +173,4 @@ cython_debug/
 message*.json
 *.json
 jiucai/*.txt
+*.txt

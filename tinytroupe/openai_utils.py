@@ -416,7 +416,7 @@ class AzureClient(OpenAIClient):
                                   api_key = os.getenv("AZURE_OPENAI_KEY"))
     
 class OllamaClient:
-    def __init__(self, base_url, model, temperature=0.3, top_p=0.95, timeout=60):
+    def __init__(self, base_url, model, temperature=0.3, top_p=0.95, timeout=60, quick_model=None):
         from urllib.parse import urlparse
 
         parsed_url = urlparse(base_url)
@@ -428,30 +428,35 @@ class OllamaClient:
         self.temperature = temperature
         self.top_p = top_p
         self.timeout = timeout
+        self.quick_model = quick_model
         from ollama import Client
         self.client = Client(
             host=client_url
         )
 
-    def send_message(self, messages, temperature=0.1, response_format=None):
+    def send_message(self, messages, temperature=0.1, response_format=None, is_quick=False):
         """
         Sends a message to the Ollama API and returns the full JSON response.
         """
+        if is_quick:
+            model = self.quick_model
+        else:
+            model = self.model
         if response_format is not None:
             payload = {
-                "model": self.model,
+                "model": model,
                 "messages": messages,
                 "stream": False,
                 "options": {
                     "temperature": self.temperature,
                     "top_p": self.top_p,
-                    "num_ctx": 35000,
+                    "num_ctx": 32000,
                 },
                 "format":response_format #.model_json_schema(),
             }
         else:
             payload = {
-                "model": self.model,
+                "model": model,
                 "messages": messages,
                 "stream": False,
                 "options": {
@@ -603,7 +608,8 @@ register_client("ollama", OllamaClient(
     model=config["Ollama"].get("MODEL"),
     temperature=float(config["Ollama"].get("TEMPERATURE", 0.7)),
     top_p=float(config["Ollama"].get("TOP_P", 0.95)),
-    timeout=int(config["Ollama"].get("TIMEOUT", 60))
+    timeout=int(config["Ollama"].get("TIMEOUT", 60)),
+    quick_model=config["Ollama"].get("QUICK_MODEL", None),
 ))
 
 
